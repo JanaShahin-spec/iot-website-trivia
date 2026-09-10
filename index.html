@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IoT & Tech Trivia Hub</title>
+  <style>
+    :root {
+      --bg: #080c10;
+      --card-bg: #0e1520;
+      --accent: #00d4ff;
+      --text: #e8edf2;
+      --text-muted: #6b7a8d;
+      --correct: #22c55e;
+      --wrong: #ef4444;
+      --border: rgba(0, 212, 255, 0.15);
+      --font: 'Space Mono', monospace, 'Segoe UI', sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      font-family: var(--font);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+
+    .container {
+      background-color: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      width: 100%;
+      max-width: 580px;
+      padding: 32px;
+      box-shadow: 0 10px 40px rgba(0, 212, 255, 0.05);
+    }
+
+    /* NAV TAB SWITCHER */
+    .tabs {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 24px;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 12px;
+    }
+
+    .tab-btn {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      font-family: var(--font);
+      font-size: 13px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      cursor: pointer;
+      padding: 6px 12px;
+      border-radius: 6px;
+      transition: all 0.2s ease;
+    }
+
+    .tab-btn.active {
+      color: var(--accent);
+      background: rgba(0, 212, 255, 0.1);
+    }
+
+    /* HEADER */
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .title {
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--accent);
+      font-weight: 700;
+    }
+
+    .progress {
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    .question {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 24px;
+      line-height: 1.4;
+    }
+
+    /* OPTIONS */
+    .options {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .btn-option {
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid var(--border);
+      color: var(--text);
+      font-family: var(--font);
+      padding: 14px 18px;
+      border-radius: 10px;
+      font-size: 14px;
+      text-align: left;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .btn-option:hover:not(:disabled) {
+      border-color: var(--accent);
+      background: rgba(0, 212, 255, 0.05);
+      transform: translateY(-2px);
+    }
+
+    .btn-option.correct {
+      background-color: rgba(34, 197, 94, 0.15) !important;
+      border-color: var(--correct) !important;
+      color: var(--correct);
+    }
+
+    .btn-option.wrong {
+      background-color: rgba(239, 68, 68, 0.15) !important;
+      border-color: var(--wrong) !important;
+      color: var(--wrong);
+    }
+
+    /* ACTIONS & BUTTONS */
+    .footer {
+      margin-top: 24px;
+      display: flex;
+      justify-content: flex-end;
+    }
+
+    .btn-action {
+      background-color: var(--accent);
+      color: var(--bg);
+      border: none;
+      font-family: var(--font);
+      padding: 12px 24px;
+      font-weight: 700;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: opacity 0.2s;
+      box-shadow: 0 0 10px rgba(0, 212, 255, 0.3);
+    }
+
+    .btn-action:hover {
+      opacity: 0.9;
+    }
+
+    /* RESULTS SCREEN */
+    .result-screen {
+      text-align: center;
+      display: none;
+    }
+
+    .result-screen h2 {
+      font-size: 24px;
+      margin-bottom: 12px;
+      color: var(--accent);
+    }
+
+    .result-screen p {
+      color: var(--text-muted);
+      margin-bottom: 24px;
+      font-size: 16px;
+    }
+
+    /* ADD QUESTION FORM */
+    .add-form {
+      display: none;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .form-group label {
+      font-size: 12px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .form-input, .form-select {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--border);
+      color: var(--text);
+      font-family: var(--font);
+      padding: 10px 14px;
+      border-radius: 8px;
+      font-size: 13px;
+      outline: none;
+    }
+
+    .form-input:focus, .form-select:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 8px rgba(0, 212, 255, 0.2);
+    }
+
+    .grid-2x2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .success-msg {
+      color: var(--correct);
+      font-size: 13px;
+      display: none;
+      text-align: center;
+      margin-top: 8px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <!-- Tab Navigation -->
+    <div class="tabs">
+      <button class="tab-btn active" id="tab-play" onclick="switchTab('play')">Play Quiz</button>
+      <button class="tab-btn" id="tab-add" onclick="switchTab('add')">+ Add Question</button>
+    </div>
+
+    <!-- QUIZ VIEW -->
+    <div id="quiz-box">
+      <div class="header">
+        <span class="title">IoT & Web Trivia</span>
+        <span class="progress" id="progress-text">Question 1/4</span>
+      </div>
+
+      <div class="question" id="question-text">Loading question...</div>
+
+      <div class="options" id="options-container"></div>
+
+      <div class="footer">
+        <button class="btn-action" id="next-btn" style="display: none;" onclick="nextQuestion()">Next Question →</button>
+      </div>
+    </div>
+
+    <!-- RESULT VIEW -->
+    <div class="result-screen" id="result-box">
+      <h2>Quiz Completed!</h2>
+      <p id="score-text">You scored 0 out of 0</p>
+      <button class="btn-action" onclick="restartQuiz()">Try Again</button>
+    </div>
+
+    <!-- ADD QUESTION FORM VIEW -->
+    <form class="add-form" id="add-box" onsubmit="handleAddQuestion(event)">
+      <div class="form-group">
+        <label>Question Text</label>
+        <input type="text" class="form-input" id="new-q-text" placeholder="e.g. What protocol does MQTT use?" required />
+      </div>
+
+      <div class="form-group">
+        <label>Options</label>
+        <div class="grid-2x2">
+          <input type="text" class="form-input" id="opt-0" placeholder="Option 1" required />
+          <input type="text" class="form-input" id="opt-1" placeholder="Option 2" required />
+          <input type="text" class="form-input" id="opt-2" placeholder="Option 3" required />
+          <input type="text" class="form-input" id="opt-3" placeholder="Option 4" required />
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Correct Answer</label>
+        <select class="form-select" id="correct-opt" required>
+          <option value="0">Option 1</option>
+          <option value="1">Option 2</option>
+          <option value="2">Option 3</option>
+          <option value="3">Option 4</option>
+        </select>
+      </div>
+
+      <button type="submit" class="btn-action" style="margin-top: 10px;">Save Question</button>
+      <div class="success-msg" id="success-msg">✓ Question saved successfully!</div>
+    </form>
+  </div>
+
+  <script>
+    const defaultQuestions = [
+      {
+        question: "Which communication protocol is lightweight and ideal for IoT devices?",
+        options: ["MQTT", "FTP", "HTTP/2", "SMTP"],
+        answer: 0
+      },
+      {
+        question: "What does HTML stand for?",
+        options: ["Hyper Text Markup Language", "High Tech Modern Language", "Hyperlink Management Language", "Home Tool Markup Language"],
+        answer: 0
+      },
+      {
+        question: "Which HTTP status code represents 'Not Found'?",
+        options: ["200", "500", "403", "404"],
+        answer: 3
+      },
+      {
+        question: "Which CSS color format uses hexadecimal notation?",
+        options: ["rgb(0,212,255)", "#00d4ff", "hsl(190, 100%, 50%)", "color(cyan)"],
+        answer: 1
+      }
+    ];
+
+    let questions = [];
+    let currentQuestionIndex = 0;
+    let score = 0;
+
+    function initQuestions() {
+      const stored = localStorage.getItem("iot_trivia_questions");
+      if (stored) {
+        questions = JSON.parse(stored);
+      } else {
+        questions = [...defaultQuestions];
+        localStorage.setItem("iot_trivia_questions", JSON.stringify(questions));
+      }
+    }
+
+    const questionEl = document.getElementById("question-text");
+    const optionsEl = document.getElementById("options-container");
+    const progressEl = document.getElementById("progress-text");
+    const nextBtn = document.getElementById("next-btn");
+    const quizBox = document.getElementById("quiz-box");
+    const resultBox = document.getElementById("result-box");
+    const addBox = document.getElementById("add-box");
+    const scoreText = document.getElementById("score-text");
+
+    function loadQuestion() {
+      const current = questions[currentQuestionIndex];
+      questionEl.textContent = current.question;
+      progressEl.textContent = `Question ${currentQuestionIndex + 1}/${questions.length}`;
+      
+      optionsEl.innerHTML = "";
+      nextBtn.style.display = "none";
+
+      current.options.forEach((opt, index) => {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "btn-option";
+        button.textContent = opt;
+        button.onclick = () => selectOption(index, current.answer);
+        optionsEl.appendChild(button);
+      });
+    }
+
+    function selectOption(selectedIndex, correctIndex) {
+      const buttons = optionsEl.children;
+      
+      for (let i = 0; i < buttons.length; i++) {
+        buttons[i].disabled = true;
+        if (i === correctIndex) {
+          buttons[i].classList.add("correct");
+        }
+      }
+
+      if (selectedIndex === correctIndex) {
+        score++;
+      } else {
+        buttons[selectedIndex].classList.add("wrong");
+      }
+
+      nextBtn.style.display = "block";
+    }
+
+    function nextQuestion() {
+      currentQuestionIndex++;
+      if (currentQuestionIndex < questions.length) {
+        loadQuestion();
+      } else {
+        showResults();
+      }
+    }
+
+    function showResults() {
+      quizBox.style.display = "none";
+      resultBox.style.display = "block";
+      scoreText.textContent = `You scored ${score} out of ${questions.length}!`;
+    }
+
+    function restartQuiz() {
+      score = 0;
+      currentQuestionIndex = 0;
+      resultBox.style.display = "none";
+      quizBox.style.display = "block";
+      loadQuestion();
+    }
+
+    function switchTab(tab) {
+      document.getElementById("tab-play").classList.toggle("active", tab === 'play');
+      document.getElementById("tab-add").classList.toggle("active", tab === 'add');
+
+      if (tab === 'play') {
+        addBox.style.display = "none";
+        restartQuiz();
+      } else {
+        quizBox.style.display = "none";
+        resultBox.style.display = "none";
+        addBox.style.display = "flex";
+      }
+    }
+
+    function handleAddQuestion(e) {
+      e.preventDefault();
+
+      const newQ = {
+        question: document.getElementById("new-q-text").value,
+        options: [
+          document.getElementById("opt-0").value,
+          document.getElementById("opt-1").value,
+          document.getElementById("opt-2").value,
+          document.getElementById("opt-3").value
+        ],
+        answer: parseInt(document.getElementById("correct-opt").value, 10)
+      };
+
+      questions.push(newQ);
+      localStorage.setItem("iot_trivia_questions", JSON.stringify(questions));
+
+      document.getElementById("add-box").reset();
+      const msg = document.getElementById("success-msg");
+      msg.style.display = "block";
+      setTimeout(() => { msg.style.display = "none"; }, 2500);
+    }
+
+    initQuestions();
+    loadQuestion();
+  </script>
+</body>
+</html>
