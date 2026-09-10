@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>IoT & Tech Trivia Hub</title>
+  <title>IoT Club Trivia Hub</title>
   <style>
     :root {
       --bg: #080c10;
@@ -358,7 +358,7 @@
     <!-- WELCOME VIEW -->
     <div id="welcome-box" class="welcome-screen">
       <div class="welcome-icon">⚡</div>
-      <h1>IoT & Tech Trivia</h1>
+      <h1>IoT Club Trivia</h1>
       <p>Test your knowledge on Internet of Things, web protocols, and networking concepts. Answer correctly to score points!</p>
       <button class="btn-action" onclick="switchTab('play')">Start Quiz →</button>
     </div>
@@ -366,7 +366,7 @@
     <!-- QUIZ VIEW -->
     <div id="quiz-box" class="view-panel">
       <div class="header">
-        <span class="title">IoT & Web Trivia</span>
+        <span class="title">IoT Club Trivia</span>
         <span class="progress" id="progress-text">Question 1/4</span>
       </div>
 
@@ -433,8 +433,8 @@
   <script>
     const defaultQuestions = [
       {
-        question: "Which communication protocol is lightweight and ideal for IoT devices?",
-        options: ["MQTT", "FTP", "HTTP/2", "SMTP"],
+        question: "What does the acronym "IoT" stand for",
+        options: ["Internet of Things", "Information on Tech", "Integration of Tools", "Internal Online Network"],
         answer: 0
       },
       {
@@ -448,9 +448,9 @@
         answer: 3
       },
       {
-        question: "Which CSS color format uses hexadecimal notation?",
-        options: ["rgb(0,212,255)", "#00d4ff", "hsl(190, 100%, 50%)", "color(cyan)"],
-        answer: 1
+        question: "Which wireless technology is most commonly used by home IoT devices to connect to your router?",
+        options: ["WIFI", "Infrared", "Satellite", "FM Radio"],
+        answer: 0
       }
     ];
 
