@@ -47,7 +47,7 @@
     /* NAV TAB SWITCHER */
     .tabs {
       display: flex;
-      gap: 10px;
+      gap: 8px;
       margin-bottom: 24px;
       border-bottom: 1px solid var(--border);
       padding-bottom: 12px;
@@ -58,12 +58,12 @@
       border: none;
       color: var(--text-muted);
       font-family: var(--font);
-      font-size: 13px;
+      font-size: 12px;
       font-weight: 700;
       text-transform: uppercase;
-      letter-spacing: 0.1em;
+      letter-spacing: 0.08em;
       cursor: pointer;
-      padding: 6px 12px;
+      padding: 6px 10px;
       border-radius: 6px;
       transition: all 0.2s ease;
     }
@@ -71,6 +71,30 @@
     .tab-btn.active {
       color: var(--accent);
       background: rgba(0, 212, 255, 0.1);
+    }
+
+    /* WELCOME SCREEN */
+    .welcome-screen {
+      text-align: center;
+      padding: 10px 0;
+    }
+
+    .welcome-icon {
+      font-size: 42px;
+      margin-bottom: 16px;
+    }
+
+    .welcome-screen h1 {
+      font-size: 24px;
+      color: var(--accent);
+      margin-bottom: 10px;
+    }
+
+    .welcome-screen p {
+      color: var(--text-muted);
+      font-size: 14px;
+      line-height: 1.6;
+      margin-bottom: 28px;
     }
 
     /* HEADER */
@@ -181,8 +205,8 @@
       font-size: 16px;
     }
 
-    /* ADD QUESTION FORM */
-    .add-form {
+    /* ADD & MANAGE FORMS */
+    .view-panel {
       display: none;
       flex-direction: column;
       gap: 14px;
@@ -230,6 +254,52 @@
       text-align: center;
       margin-top: 8px;
     }
+
+    /* DELETE LIST STYLES */
+    .question-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      max-height: 320px;
+      overflow-y: auto;
+      padding-right: 4px;
+    }
+
+    .q-item {
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 12px 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .q-item-text {
+      font-size: 13px;
+      color: var(--text);
+      line-height: 1.4;
+    }
+
+    .btn-delete {
+      background: rgba(239, 68, 68, 0.15);
+      border: 1px solid var(--wrong);
+      color: var(--wrong);
+      font-family: var(--font);
+      padding: 6px 10px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 700;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.2s;
+    }
+
+    .btn-delete:hover {
+      background: var(--wrong);
+      color: #fff;
+    }
   </style>
 </head>
 <body>
@@ -237,12 +307,22 @@
   <div class="container">
     <!-- Tab Navigation -->
     <div class="tabs">
-      <button class="tab-btn active" id="tab-play" onclick="switchTab('play')">Play Quiz</button>
-      <button class="tab-btn" id="tab-add" onclick="switchTab('add')">+ Add Question</button>
+      <button class="tab-btn active" id="tab-welcome" onclick="switchTab('welcome')">Home</button>
+      <button class="tab-btn" id="tab-play" onclick="switchTab('play')">Play Quiz</button>
+      <button class="tab-btn" id="tab-add" onclick="switchTab('add')">+ Add</button>
+      <button class="tab-btn" id="tab-manage" onclick="switchTab('manage')">Manage</button>
+    </div>
+
+    <!-- WELCOME VIEW -->
+    <div id="welcome-box" class="welcome-screen">
+      <div class="welcome-icon">⚡</div>
+      <h1>IoT & Tech Trivia</h1>
+      <p>Test your knowledge on Internet of Things, web protocols, and networking concepts. Answer correctly to score points!</p>
+      <button class="btn-action" onclick="switchTab('play')">Start Quiz →</button>
     </div>
 
     <!-- QUIZ VIEW -->
-    <div id="quiz-box">
+    <div id="quiz-box" class="view-panel">
       <div class="header">
         <span class="title">IoT & Web Trivia</span>
         <span class="progress" id="progress-text">Question 1/4</span>
@@ -265,7 +345,7 @@
     </div>
 
     <!-- ADD QUESTION FORM VIEW -->
-    <form class="add-form" id="add-box" onsubmit="handleAddQuestion(event)">
+    <form class="view-panel" id="add-box" onsubmit="handleAddQuestion(event)">
       <div class="form-group">
         <label>Question Text</label>
         <input type="text" class="form-input" id="new-q-text" placeholder="e.g. What protocol does MQTT use?" required />
@@ -294,6 +374,17 @@
       <button type="submit" class="btn-action" style="margin-top: 10px;">Save Question</button>
       <div class="success-msg" id="success-msg">✓ Question saved successfully!</div>
     </form>
+
+    <!-- MANAGE / DELETE QUESTIONS VIEW -->
+    <div class="view-panel" id="manage-box">
+      <div class="header">
+        <span class="title">Manage Questions</span>
+        <span class="progress" id="total-q-count">Total: 0</span>
+      </div>
+      <div class="question-list" id="question-list-container">
+        <!-- Questions injected here dynamically -->
+      </div>
+    </div>
   </div>
 
   <script>
@@ -338,12 +429,22 @@
     const optionsEl = document.getElementById("options-container");
     const progressEl = document.getElementById("progress-text");
     const nextBtn = document.getElementById("next-btn");
+    
+    const welcomeBox = document.getElementById("welcome-box");
     const quizBox = document.getElementById("quiz-box");
     const resultBox = document.getElementById("result-box");
     const addBox = document.getElementById("add-box");
+    const manageBox = document.getElementById("manage-box");
     const scoreText = document.getElementById("score-text");
 
     function loadQuestion() {
+      if (questions.length === 0) {
+        questionEl.textContent = "No questions available! Add some in the '+ Add' tab.";
+        optionsEl.innerHTML = "";
+        progressEl.textContent = "0/0";
+        return;
+      }
+
       const current = questions[currentQuestionIndex];
       questionEl.textContent = current.question;
       progressEl.textContent = `Question ${currentQuestionIndex + 1}/${questions.length}`;
@@ -399,24 +500,31 @@
       score = 0;
       currentQuestionIndex = 0;
       resultBox.style.display = "none";
-      quizBox.style.display = "block";
+      quizBox.style.display = "flex";
       loadQuestion();
     }
 
+    // TAB SWITCHER FUNCTION
     function switchTab(tab) {
+      document.getElementById("tab-welcome").classList.toggle("active", tab === 'welcome');
       document.getElementById("tab-play").classList.toggle("active", tab === 'play');
       document.getElementById("tab-add").classList.toggle("active", tab === 'add');
+      document.getElementById("tab-manage").classList.toggle("active", tab === 'manage');
+
+      welcomeBox.style.display = (tab === 'welcome') ? 'block' : 'none';
+      quizBox.style.display = (tab === 'play') ? 'flex' : 'none';
+      addBox.style.display = (tab === 'add') ? 'flex' : 'none';
+      manageBox.style.display = (tab === 'manage') ? 'flex' : 'none';
+      resultBox.style.display = 'none';
 
       if (tab === 'play') {
-        addBox.style.display = "none";
         restartQuiz();
-      } else {
-        quizBox.style.display = "none";
-        resultBox.style.display = "none";
-        addBox.style.display = "flex";
+      } else if (tab === 'manage') {
+        renderManageList();
       }
     }
 
+    // ADD QUESTION FUNCTION
     function handleAddQuestion(e) {
       e.preventDefault();
 
@@ -440,8 +548,37 @@
       setTimeout(() => { msg.style.display = "none"; }, 2500);
     }
 
+    // RENDER MANAGE LIST
+    function renderManageList() {
+      const container = document.getElementById("question-list-container");
+      document.getElementById("total-q-count").textContent = `Total: ${questions.length}`;
+      container.innerHTML = "";
+
+      if (questions.length === 0) {
+        container.innerHTML = `<div style="color:var(--text-muted); text-align:center; padding:20px;">No questions left. Add some in the + Add tab!</div>`;
+        return;
+      }
+
+      questions.forEach((q, index) => {
+        const item = document.createElement("div");
+        item.className = "q-item";
+        item.innerHTML = `
+          <span class="q-item-text">${index + 1}. ${q.question}</span>
+          <button class="btn-delete" onclick="deleteQuestion(${index})">Delete</button>
+        `;
+        container.appendChild(item);
+      });
+    }
+
+    // DELETE QUESTION FUNCTION
+    function deleteQuestion(index) {
+      questions.splice(index, 1);
+      localStorage.setItem("iot_trivia_questions", JSON.stringify(questions));
+      renderManageList();
+    }
+
+    // Initialize App
     initQuestions();
-    loadQuestion();
   </script>
 </body>
 </html>
