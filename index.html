@@ -459,21 +459,23 @@
     let score = 0;
 
     function initQuestions() {
-      const stored = localStorage.getItem("iot_trivia_questions");
-      if (stored) {
-        questions = JSON.parse(stored);
-      } else {
+      try {
+        const stored = localStorage.getItem("iot_trivia_questions");
+        if (stored) {
+          questions = JSON.parse(stored);
+        } else {
+          questions = [...defaultQuestions];
+          localStorage.setItem("iot_trivia_questions", JSON.stringify(questions));
+        }
+      } catch(e) {
         questions = [...defaultQuestions];
-        localStorage.setItem("iot_trivia_questions", JSON.stringify(questions));
       }
     }
 
-    // SIMULATED LOADING PROCESS
+    // AUTOMATIC LOADING SEQUENCE
     function startLoadingSequence() {
       setTimeout(() => {
-        document.getElementById("loading-status").textContent = "Data assets verified and ready.";
-        document.querySelector(".spinner").style.display = "none";
-        document.getElementById("proceed-btn").style.display = "inline-block";
+        finishLoading(); // Automatically transitions to main interface after 1.5 seconds
       }, 1500);
     }
 
@@ -501,11 +503,11 @@
         questionEl.textContent = "No questions available! Add some in the '+ Add' tab.";
         optionsEl.innerHTML = "";
         progressEl.textContent = "0/0";
-        deleteCurrentBtn.style.display = "none";
+        if (deleteCurrentBtn) deleteCurrentBtn.style.display = "none";
         return;
       }
 
-      deleteCurrentBtn.style.display = "inline-block";
+      if (deleteCurrentBtn) deleteCurrentBtn.style.display = "inline-block";
 
       if (currentQuestionIndex >= questions.length) {
         currentQuestionIndex = 0;
@@ -516,7 +518,7 @@
       progressEl.textContent = `Question ${currentQuestionIndex + 1}/${questions.length}`;
       
       optionsEl.innerHTML = "";
-      nextBtn.style.display = "none";
+      if (nextBtn) nextBtn.style.display = "none";
 
       current.options.forEach((opt, index) => {
         const button = document.createElement("button");
@@ -544,7 +546,7 @@
         buttons[selectedIndex].classList.add("wrong");
       }
 
-      nextBtn.style.display = "block";
+      if (nextBtn) nextBtn.style.display = "block";
     }
 
     function nextQuestion() {
